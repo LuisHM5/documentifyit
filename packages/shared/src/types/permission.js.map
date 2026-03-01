@@ -1,0 +1,1 @@
+{"version":3,"file":"permission.js","sourceRoot":"","sources":["permission.ts"],"names":[],"mappings":";;;AAAA,IAAY,eAMX;AAND,WAAY,eAAe;IACzB,kCAAe,CAAA;IACf,kCAAe,CAAA;IACf,oCAAiB,CAAA;IACjB,wCAAqB,CAAA;IACrB,oCAAiB,CAAA;AACnB,CAAC,EANW,eAAe,+BAAf,eAAe,QAM1B;AAED,IAAY,sBAGX;AAHD,WAAY,sBAAsB;IAChC,+CAAqB,CAAA;IACrB,2CAAiB,CAAA;AACnB,CAAC,EAHW,sBAAsB,sCAAtB,sBAAsB,QAGjC"}

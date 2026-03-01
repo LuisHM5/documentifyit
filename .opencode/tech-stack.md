@@ -1,0 +1,31 @@
+### Tech stack
+
+- Create mono repo with nodejs and npm workspaces
+- React + Nextjs
+  - Shadcn ui library
+  - Tailwind CSS
+  - TypeScript
+- Backend nestjs
+  - typeorm
+    - postgresql
+    - migraciones automaticas
+    - seeds
+  - cache
+    - redis
+  - class-validator
+  - class-transformer
+  - pino-logs
+  - cronjobs
+  - elasticsearch
+  - s3 buckets
+  - RateLimits
+  - proxy
+    - traefik
+    - nginx
+  - AI
+    - AI SDK 'ai'
+- Infrastructure
+  - Docker (with dev and prod configurations)
+  - Kubernetes
+  - AWS (S3, RDS, EKS)
+  - CI/CD with GitHub Actions
