@@ -26,6 +26,17 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() body: { email: string; password: string; name: string }) {
+    const user = await this.usersService.create({
+      email: body.email,
+      password: body.password,
+      name: body.name,
+    });
+    return this.authService.login(user);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Body() body: { refreshToken: string }) {

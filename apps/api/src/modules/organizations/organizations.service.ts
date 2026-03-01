@@ -15,4 +15,9 @@ export class OrganizationsService {
     if (!org) throw new NotFoundException(`Organization ${id} not found`);
     return org;
   }
+
+  async create(name: string): Promise<OrganizationEntity> {
+    const org = this.orgsRepo.create({ name });
+    return this.orgsRepo.save(org);
+  }
 }
