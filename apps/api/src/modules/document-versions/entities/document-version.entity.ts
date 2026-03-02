@@ -15,8 +15,12 @@ export class DocumentVersionEntity {
   @Column({ type: 'uuid', name: 'document_id' })
   declare documentId: string;
 
+  /**
+   * JSONB snapshot — stored as a BlockNote Block[] array.
+   * Typed as `unknown` to accept both array and legacy object shapes.
+   */
   @Column({ type: 'jsonb' })
-  declare content: Record<string, unknown>;
+  declare content: unknown;
 
   @Column({ type: 'int', name: 'version_number' })
   declare versionNumber: number;

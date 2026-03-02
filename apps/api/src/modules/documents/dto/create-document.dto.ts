@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength, IsObject, IsUUID, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsArray, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateDocumentDto {
@@ -8,10 +8,10 @@ export class CreateDocumentDto {
   @MaxLength(255)
   declare title: string;
 
-  @ApiPropertyOptional({ description: 'BlockNote JSON content' })
+  @ApiPropertyOptional({ description: 'BlockNote Block[] array — serialised as JSONB' })
   @IsOptional()
-  @IsObject()
-  content?: Record<string, unknown>;
+  @IsArray()
+  content?: unknown[];
 
   @ApiPropertyOptional()
   @IsOptional()

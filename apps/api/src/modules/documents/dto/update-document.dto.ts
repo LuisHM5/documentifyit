@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength, IsObject, IsUUID, IsArray, IsEnum } from 'class-validator';
+import { IsString, IsOptional, MaxLength, IsArray, IsUUID, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DocumentStatus } from '@documentifyit/shared';
 
@@ -9,10 +9,10 @@ export class UpdateDocumentDto {
   @MaxLength(255)
   title?: string;
 
-  @ApiPropertyOptional({ description: 'BlockNote JSON content' })
+  @ApiPropertyOptional({ description: 'BlockNote Block[] array — serialised as JSONB' })
   @IsOptional()
-  @IsObject()
-  content?: Record<string, unknown>;
+  @IsArray()
+  content?: unknown[];
 
   @ApiPropertyOptional({ enum: DocumentStatus })
   @IsOptional()

@@ -123,7 +123,7 @@ Do not wrap in code fences. Output only the JSON object.`,
    */
   async validateDocument(
     documentId: string,
-    content: Record<string, unknown>,
+    content: unknown,
   ): Promise<{ valid: boolean; issues: string[] }> {
     this.logger.log(`AI validate document ${documentId}`);
     const openai = this.getOpenAI();
@@ -149,10 +149,12 @@ Issues should be specific, actionable strings. Empty array if valid.`,
     }
   }
 
-  extractPlainText(content: Record<string, unknown>): string {
+  extractPlainText(content: unknown): string {
     try {
-      const blocks = content['content'] as Array<Record<string, unknown>> | undefined;
-      if (!blocks) return '';
+      // BlockNote stores content as a flat Block[] array
+      const blocks = Array.isArray(content)
+        ? (content as Array<Record<string, unknown>>)
+        : [];
       return blocks
         .map((block) => {
           const inline = block['content'] as Array<Record<string, unknown>> | undefined;

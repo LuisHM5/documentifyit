@@ -17,6 +17,9 @@ export function useDocument(id: string) {
     queryKey: documentKey(id),
     queryFn: () => documentsService.findById(id),
     enabled: !!id,
+    // Keep cached content fresh for 30 s so a navigation back to the same
+    // document does not flash empty content while the background refetch runs.
+    staleTime: 30_000,
   });
 }
 

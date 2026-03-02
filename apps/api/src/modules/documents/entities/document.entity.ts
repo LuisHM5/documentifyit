@@ -16,8 +16,13 @@ export class DocumentEntity {
   @Column({ type: 'varchar' })
   declare title: string;
 
-  @Column({ type: 'jsonb', default: {} })
-  declare content: Record<string, unknown>;
+  /**
+   * Stored as JSONB. In practice this is a BlockNote Block[] array, but we type
+   * it as `unknown` so TypeScript accepts both the legacy `{}` default and the
+   * runtime array without unsafe casts throughout the service layer.
+   */
+  @Column({ type: 'jsonb', default: '[]' })
+  declare content: unknown;
 
   @Column({ type: 'enum', enum: DocumentStatus, default: DocumentStatus.Draft })
   declare status: DocumentStatus;

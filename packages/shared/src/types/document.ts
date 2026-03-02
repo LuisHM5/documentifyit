@@ -11,8 +11,8 @@ export enum DocumentStatus {
 export interface Document {
   id: string;
   title: string;
-  /** JSONB — TipTap/BlockNote JSON format */
-  content: Record<string, unknown>;
+  /** JSONB — BlockNote stores content as a flat Block[] array */
+  content: unknown;
   status: DocumentStatus;
   ownerId: string;
   orgId: string;

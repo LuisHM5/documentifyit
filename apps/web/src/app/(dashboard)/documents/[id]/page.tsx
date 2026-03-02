@@ -33,7 +33,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [sharingLoading, setSharingLoading] = useState(false);
   const [collaborators, setCollaborators] = useState<Map<string, string>>(new Map());
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Separate timers so a title keystroke cannot cancel a pending content save.
+  const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Always hold the latest blocks so the debounced save captures the most
+  // recent content even if multiple onChange calls fire within the delay.
+  const pendingContentRef = useRef<unknown[] | null>(null);
 
   // Real-time collaboration
   useDocumentSocket({
@@ -57,11 +62,27 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     }
   }, [document, titleDirty]);
 
-  const scheduleSave = useCallback(
-    (patch: { title?: string; content?: Record<string, unknown> }) => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        void updateDocument.mutateAsync(patch);
+  const scheduleContentSave = useCallback(
+    (blocks: unknown[]) => {
+      // Store the latest blocks so the timer callback always sends up-to-date content.
+      pendingContentRef.current = blocks;
+      if (contentTimerRef.current) clearTimeout(contentTimerRef.current);
+      contentTimerRef.current = setTimeout(() => {
+        const latest = pendingContentRef.current;
+        if (latest !== null) {
+          pendingContentRef.current = null;
+          void updateDocument.mutateAsync({ content: latest });
+        }
+      }, AUTOSAVE_DELAY_MS);
+    },
+    [updateDocument],
+  );
+
+  const scheduleTitleSave = useCallback(
+    (value: string) => {
+      if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
+      titleTimerRef.current = setTimeout(() => {
+        void updateDocument.mutateAsync({ title: value });
       }, AUTOSAVE_DELAY_MS);
     },
     [updateDocument],
@@ -71,14 +92,14 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     const value = e.target.value;
     setTitle(value);
     setTitleDirty(true);
-    scheduleSave({ title: value });
+    scheduleTitleSave(value);
   };
 
   const handleContentChange = (content: unknown) => {
-    const contentObj = content as Record<string, unknown>;
+    // BlockNote passes a flat Block[] array
+    const blocks = Array.isArray(content) ? (content as Array<Record<string, unknown>>) : [];
     // Extract plain text for AI context
     try {
-      const blocks = (contentObj['content'] as Array<Record<string, unknown>>) ?? [];
       const text = blocks
         .map((b) => {
           const inline = b['content'] as Array<Record<string, unknown>> | undefined;
@@ -89,7 +110,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     } catch {
       // ignore
     }
-    scheduleSave({ content: contentObj });
+    scheduleContentSave(blocks);
   };
 
   const handleCreateShareLink = async () => {
@@ -134,9 +155,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     );
   }
 
-  const initialContent = document.content?.content
-    ? (document.content.content as PartialBlock[])
-    : undefined;
+  // BlockNote stores content as a flat Block[] array.
+  // Pass `undefined` (not []) when there is no content so BlockNote inserts its
+  // own default paragraph instead of throwing "initialContent must be a
+  // non-empty array" (BlockNoteEditor.ts:514).
+  const rawContent = document.content;
+  const initialContent =
+    Array.isArray(rawContent) && rawContent.length > 0
+      ? (rawContent as PartialBlock[])
+      : undefined;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">

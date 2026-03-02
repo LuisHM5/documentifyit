@@ -1,9 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, type DeepPartial } from 'typeorm';
 import { DocumentEntity } from './entities/document.entity';
 import { DocumentVersionEntity } from '../document-versions/entities/document-version.entity';
 import { DocumentStatus } from '@documentifyit/shared';
+
+/** Fields callers can supply when creating / updating a document. */
+export interface DocumentData {
+  title?: string;
+  content?: unknown;
+  status?: DocumentStatus;
+  folderId?: string | null;
+  tags?: string[];
+  orgId?: string;
+  ownerId?: string;
+  version?: number;
+  isDeleted?: boolean;
+}
 
 const APPROVAL_STATE_MACHINE: Partial<Record<DocumentStatus, DocumentStatus[]>> = {
   [DocumentStatus.Draft]: [DocumentStatus.Submitted],
@@ -21,6 +34,8 @@ const APPROVAL_STATE_MACHINE: Partial<Record<DocumentStatus, DocumentStatus[]>> 
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
+
   constructor(
     @InjectRepository(DocumentEntity)
     private readonly documentsRepo: Repository<DocumentEntity>,
@@ -43,9 +58,9 @@ export class DocumentsService {
     return doc;
   }
 
-  async create(data: Partial<DocumentEntity>): Promise<DocumentEntity> {
+  async create(data: DocumentData): Promise<DocumentEntity> {
     const doc = this.documentsRepo.create({
-      ...data,
+      ...(data as DeepPartial<DocumentEntity>),
       version: 1,
       status: DocumentStatus.Draft,
     });
@@ -55,7 +70,7 @@ export class DocumentsService {
     await this.versionsRepo.save(
       this.versionsRepo.create({
         documentId: saved.id,
-        content: saved.content ?? {},
+        content: (saved.content ?? []) as DeepPartial<DocumentVersionEntity>['content'],
         versionNumber: 1,
         authorId: saved.ownerId,
       }),
@@ -67,7 +82,7 @@ export class DocumentsService {
   async update(
     id: string,
     orgId: string,
-    data: Partial<DocumentEntity>,
+    data: DocumentData,
     authorId?: string,
   ): Promise<DocumentEntity> {
     const doc = await this.findById(id, orgId);
@@ -75,7 +90,12 @@ export class DocumentsService {
       data.content !== undefined &&
       JSON.stringify(data.content) !== JSON.stringify(doc.content);
 
-    Object.assign(doc, data);
+    // Only copy fields that are explicitly provided so that a title-only patch
+    // never overwrites an existing content value with undefined.
+    const definedData = Object.fromEntries(
+      Object.entries(data).filter(([, v]) => v !== undefined),
+    ) as DocumentData;
+    Object.assign(doc, definedData);
 
     // Auto-increment version and snapshot when content changes
     if (contentChanged) {
@@ -83,7 +103,7 @@ export class DocumentsService {
       await this.versionsRepo.save(
         this.versionsRepo.create({
           documentId: doc.id,
-          content: data.content ?? {},
+          content: (data.content ?? []) as DeepPartial<DocumentVersionEntity>['content'],
           versionNumber: doc.version,
           authorId: authorId ?? doc.ownerId,
         }),

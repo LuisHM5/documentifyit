@@ -27,6 +27,7 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { SearchModule } from './modules/search/search.module';
 import { AiModule } from './modules/ai/ai.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     SearchModule,
     AiModule,
     RealtimeModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

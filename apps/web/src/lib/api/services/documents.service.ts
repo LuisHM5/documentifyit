@@ -3,14 +3,14 @@ import type { Document, DocumentStatus, DocumentVersion } from '@documentifyit/s
 
 export interface CreateDocumentRequest {
   title: string;
-  content?: Record<string, unknown>;
+  content?: unknown[];
   folderId?: string;
   tags?: string[];
 }
 
 export interface UpdateDocumentRequest {
   title?: string;
-  content?: Record<string, unknown>;
+  content?: unknown[];
   status?: DocumentStatus;
   folderId?: string;
   tags?: string[];

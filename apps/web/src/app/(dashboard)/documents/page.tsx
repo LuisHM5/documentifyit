@@ -48,17 +48,14 @@ export default function DocumentsPage() {
   };
 
   const handleGeneratedDoc = async (title: string, markdownContent: string) => {
-    // Convert markdown to a basic BlockNote content structure
-    const content = {
-      type: 'doc',
-      content: markdownContent
-        .split('\n\n')
-        .filter(Boolean)
-        .map((paragraph) => ({
-          type: 'paragraph',
-          content: [{ type: 'text', text: paragraph }],
-        })),
-    };
+    // Convert markdown to a flat BlockNote Block[] array
+    const content: unknown[] = markdownContent
+      .split('\n\n')
+      .filter(Boolean)
+      .map((paragraph) => ({
+        type: 'paragraph',
+        content: [{ type: 'text', text: paragraph }],
+      }));
     const doc = await createDocument.mutateAsync({ title, content });
     router.push(`/documents/${doc.id}`);
   };

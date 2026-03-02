@@ -90,10 +90,12 @@ export class SearchService {
     }));
   }
 
-  private extractExcerpt(content: Record<string, unknown>, query: string): string {
+  private extractExcerpt(content: unknown, query: string): string {
     try {
-      const blocks = content['content'] as Array<Record<string, unknown>> | undefined;
-      if (!blocks) return '';
+      // BlockNote stores content as a flat Block[] array
+      const blocks = Array.isArray(content)
+        ? (content as Array<Record<string, unknown>>)
+        : [];
       const lowerQ = query.toLowerCase();
       for (const block of blocks) {
         const inlineContent = block['content'] as Array<Record<string, unknown>> | undefined;
@@ -120,7 +122,7 @@ export class SearchService {
     return '';
   }
 
-  indexDocument(_documentId: string, _content: Record<string, unknown>): void {
+  indexDocument(_documentId: string, _content: unknown): void {
     this.logger.debug(`Document indexed (PostgreSQL ILIKE search)`);
   }
 
