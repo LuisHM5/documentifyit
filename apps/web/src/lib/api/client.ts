@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { requestInterceptor } from './interceptors/request';
-import { transformError } from './interceptors/response';
+import { responseInterceptor, transformError } from './interceptors/response';
 
 const API_BASE_URL =
   typeof window !== 'undefined'
@@ -22,6 +22,8 @@ apiClient.interceptors.request.use(requestInterceptor, (error) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    return Promise.reject(transformError(error));
+    return responseInterceptor(error).catch((err: unknown) => {
+      return Promise.reject(err instanceof Error ? err : transformError(error));
+    });
   },
 );

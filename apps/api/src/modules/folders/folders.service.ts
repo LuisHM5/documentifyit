@@ -24,4 +24,9 @@ export class FoldersService {
     const folder = this.foldersRepo.create(data);
     return this.foldersRepo.save(folder);
   }
+
+  async remove(id: string, orgId: string): Promise<void> {
+    const folder = await this.findById(id, orgId);
+    await this.foldersRepo.remove(folder);
+  }
 }

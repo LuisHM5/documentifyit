@@ -9,6 +9,9 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { RefreshDto } from './dto/refresh.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -20,7 +23,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: { email: string; password: string }) {
+  async login(@Body() body: LoginDto) {
     const user = await this.authService.validateUser(body.email, body.password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     return this.authService.login(user);
@@ -28,7 +31,7 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() body: { email: string; password: string; name: string }) {
+  async register(@Body() body: RegisterDto) {
     const user = await this.usersService.create({
       email: body.email,
       password: body.password,
@@ -39,8 +42,14 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() body: { refreshToken: string }) {
-    // TODO: implement refresh token validation
-    return { message: 'Not implemented' };
+  async refresh(@Body() body: RefreshDto) {
+    return this.authService.refresh(body.refreshToken);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logout(): void {
+    // Tokens are stateless JWTs — logout is handled client-side by clearing tokens.
+    // In a production system with token revocation, invalidate the refresh token here.
   }
 }

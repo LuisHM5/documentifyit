@@ -26,6 +26,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { SearchModule } from './modules/search/search.module';
 import { AiModule } from './modules/ai/ai.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 
 @Module({
   imports: [
@@ -49,9 +50,9 @@ import { AiModule } from './modules/ai/ai.module';
     // TypeORM (PostgreSQL)
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        ...config.get('database'),
-      }),
+      useFactory: (config: ConfigService) => {
+        return { ...config.get('database') } as Record<string, unknown>;
+      },
     }),
 
     // Rate limiting
@@ -78,6 +79,7 @@ import { AiModule } from './modules/ai/ai.module';
     ApiKeysModule,
     SearchModule,
     AiModule,
+    RealtimeModule,
   ],
 })
 export class AppModule {}

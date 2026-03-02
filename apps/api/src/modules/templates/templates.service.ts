@@ -24,4 +24,15 @@ export class TemplatesService {
     const template = this.templatesRepo.create(data);
     return this.templatesRepo.save(template);
   }
+
+  async update(id: string, orgId: string, data: Partial<TemplateEntity>): Promise<TemplateEntity> {
+    const template = await this.findById(id, orgId);
+    Object.assign(template, data);
+    return this.templatesRepo.save(template);
+  }
+
+  async remove(id: string, orgId: string): Promise<void> {
+    const template = await this.findById(id, orgId);
+    await this.templatesRepo.remove(template);
+  }
 }
